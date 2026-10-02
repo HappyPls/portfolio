@@ -1,13 +1,24 @@
 // Hero showcase: repeat each row's images until they cover the screen, then loop by one set's width.
-const SHOWCASE_SPEEDS = [45, 38, 32]; // px per second, per row
+// Only the visible layout (desktop strip or the three phone strips) is built; hidden tracks are skipped.
+function imageReady(img) {
+  if (img.dataset.src && !img.getAttribute('src')) img.src = img.dataset.src;
+  if (img.complete && img.naturalWidth) return Promise.resolve();
+  return new Promise(resolve => {
+    img.addEventListener('load', resolve, { once: true });
+    img.addEventListener('error', resolve, { once: true });
+  });
+}
 
-function buildShowcase() {
-  document.querySelectorAll('.showcase-track').forEach((track, i) => {
+async function buildShowcase() {
+  const tracks = Array.from(document.querySelectorAll('.showcase-track'))
+    .filter(track => track.getClientRects().length > 0);
+  for (const track of tracks) {
     track.querySelectorAll('[data-clone]').forEach(el => el.remove());
     const originals = Array.from(track.children);
+    await Promise.all(originals.map(imageReady));
     const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
     const setWidth = track.scrollWidth + gap;
-    if (!setWidth) return;
+    if (!setWidth) continue;
     const copies = Math.ceil(window.innerWidth / setWidth) + 1;
     for (let c = 0; c < copies; c++) {
       originals.forEach(img => {
@@ -17,12 +28,12 @@ function buildShowcase() {
       });
     }
     track.style.setProperty('--shift', `-${setWidth}px`);
-    track.style.animationDuration = `${setWidth / SHOWCASE_SPEEDS[i % SHOWCASE_SPEEDS.length]}s`;
-  });
+    track.style.animationDuration = `${setWidth / (Number(track.dataset.speed) || 40)}s`;
+  }
 }
 
 let showcaseResize;
-window.addEventListener('load', buildShowcase);
+buildShowcase();
 window.addEventListener('resize', () => {
   clearTimeout(showcaseResize);
   showcaseResize = setTimeout(buildShowcase, 250);

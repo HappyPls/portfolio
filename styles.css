@@ -122,8 +122,20 @@ a { color: inherit; text-decoration: none; }
   animation: showcase-scroll 70s linear infinite;
 }
 
-.showcase-row.reverse .showcase-track { animation-direction: reverse; animation-duration: 80s; }
-.showcase-row.slow .showcase-track { animation-duration: 95s; }
+.showcase-row.reverse .showcase-track { animation-direction: reverse; }
+
+/* phones show the three small strips, desktop shows one big strip */
+.showcase-row.desktop-only { display: none; }
+
+@media (min-width: 769px) {
+  .showcase-row.mobile-only { display: none; }
+  .showcase-row.desktop-only {
+    display: block;
+    height: clamp(260px, 52vh, 480px);
+  }
+  .showcase-track { gap: 1.25rem; }
+  .showcase-track img { border-radius: 10px; }
+}
 
 .showcase-track img {
   height: 100%;
