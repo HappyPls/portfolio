@@ -1,3 +1,33 @@
+// Hero showcase: repeat each row's images until they cover the screen, then loop by one set's width.
+const SHOWCASE_SPEEDS = [45, 38, 32]; // px per second, per row
+
+function buildShowcase() {
+  document.querySelectorAll('.showcase-track').forEach((track, i) => {
+    track.querySelectorAll('[data-clone]').forEach(el => el.remove());
+    const originals = Array.from(track.children);
+    const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
+    const setWidth = track.scrollWidth + gap;
+    if (!setWidth) return;
+    const copies = Math.ceil(window.innerWidth / setWidth) + 1;
+    for (let c = 0; c < copies; c++) {
+      originals.forEach(img => {
+        const clone = img.cloneNode();
+        clone.dataset.clone = '';
+        track.appendChild(clone);
+      });
+    }
+    track.style.setProperty('--shift', `-${setWidth}px`);
+    track.style.animationDuration = `${setWidth / SHOWCASE_SPEEDS[i % SHOWCASE_SPEEDS.length]}s`;
+  });
+}
+
+let showcaseResize;
+window.addEventListener('load', buildShowcase);
+window.addEventListener('resize', () => {
+  clearTimeout(showcaseResize);
+  showcaseResize = setTimeout(buildShowcase, 250);
+});
+
 const tiles = Array.from(document.querySelectorAll('.tile'));
 const lightbox = document.getElementById('lightbox');
 const lbImg = document.getElementById('lb-img');
